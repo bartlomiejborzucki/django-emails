@@ -1,8 +1,5 @@
 #-*- coding: utf-8 -*-
-__author__ = 'freeman'
-
-
-
+from django.utils.translation import ugettext as _
 
 
 class Diffrent_emails(Exception):
@@ -19,6 +16,6 @@ class Email_is_empty(Exception):
         Wyjątek jest wyrzucany, zmienna email i user.email się różnią
     """
     def __init__(self):
-        self.parameter = "Pole email jest puste"
+        self.parameter = _("Email field is empty")
     def __str__(self):
         return repr(self.parameter)

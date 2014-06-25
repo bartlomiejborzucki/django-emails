@@ -15,12 +15,14 @@ setup(
     url='',
     install_requires=[
         'django-templatetag-sugar>=0.1',
+        'pycrypto',
+        'django_ses'
     ],
     tests_require=tests_require,
     license='BSD',
     extras_require={'test': tests_require},
     test_suite='unittest2.collector',
-    description = 'An efficient paginator that works.',
+    description='An efficient paginator that works.',
     packages=find_packages(),
     include_package_data=False,
     zip_safe=False,

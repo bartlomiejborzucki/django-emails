@@ -5,8 +5,8 @@ from django.core.mail import EmailMessage, get_connection
 from django.template.loader import render_to_string
 from django.template import RequestContext
 from django_ses import SESBackend
-from apps.mailing.emails.models  import Email
-from apps.mailing.emails.exceptions import Diffrent_emails, Email_is_empty
+from .models  import Email
+from .exceptions import Diffrent_emails, Email_is_empty
 
 
 def send_email(request, topic, template,
@@ -36,8 +36,8 @@ def send_email(request, topic, template,
         if user.email != email:
             raise Diffrent_emails(email)
 
-    if send_at not None and is_send_now is True:
-	is_send_now = False
+    if send_at is not None and is_send_now is True:
+	    is_send_now = False
       
     #save email to database
 
@@ -75,8 +75,8 @@ def send_email(request, topic, template,
 
         email = EmailMessage(subject=topic, body = body, from_email = from_email, to = [email], connection= connection)
         email.content_subtype = "html"
-        if file:
-            email.attach(file.name, file.read(), "application/pdf")
+        #if file:
+        #    email.attach(file.name, file.read(), "application/pdf")
         email.send()
     else:
         email_obj.is_send = False
