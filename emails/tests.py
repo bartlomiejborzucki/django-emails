@@ -1,17 +1,14 @@
 #-*- coding: utf-8 -*-
-from dateutil.relativedelta import relativedelta
 import datetime
-
+import time
+from dateutil.relativedelta import relativedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core import mail
-import time
-
-from apps.mailing.emails.utils import send_email, send_non_send_email
-from testing.utils import RequestMock
-from apps.mailing.emails.models import Email, Sender
-from apps.mailing.emails.exceptions import Diffrent_emails, Email_is_empty
+from .utils import send_email, send_non_send_email
+from .models import Email, Sender
+from .exceptions import Diffrent_emails, Email_is_empty
 
 
 class EmailSendTestCase(TestCase):
@@ -20,8 +17,6 @@ class EmailSendTestCase(TestCase):
     """
 
     def setUp(self):
-        requestMock = RequestMock()
-        self.request = requestMock.get_request_mock()
         self.user = User.objects.create_user("Test", email="user@example.com", password="test")
 
 
@@ -31,7 +26,7 @@ class EmailSendTestCase(TestCase):
         """
         topic = u"Email_testowy"
         data_email = {}
-        send_email(self.request, topic, template="emails/emails/base_email.html", data_email={}, is_send_now=False,
+        send_email(topic, template="emails/emails/base_email.html", data_email={}, is_send_now=False,
                    email="test@example.com")
 
         email_db = Email.objects.get(id=1)
@@ -42,7 +37,7 @@ class EmailSendTestCase(TestCase):
         self.assertEqual(email_db.topic, u"Email_testowy", msg=u"Sprawdzenie tematu")
         self.assertEqual(email_db.sender, None, msg=u"Wysyłamy przez domyślny email")
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", data_email={}, is_send_now=True,
+        send_email(topic, template="emails/emails/base_email.html", data_email={}, is_send_now=True,
                    email="test@example.com")
 
         email_db = Email.objects.get(id=2)
@@ -63,7 +58,7 @@ class EmailSendTestCase(TestCase):
         topic = u"Email_testowy"
         data_email = {}
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False)
 
         email_db = Email.objects.get(id=1)
@@ -84,13 +79,12 @@ class EmailSendTestCase(TestCase):
 
         self.assertEqual(sender.get_plain_password(), u"test", msg=u"hasło powinno być dobrze odkodowane")
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False, sender=sender)
 
         email_db = Email.objects.get(id=1)
 
         self.assertEqual(email_db.sender.id, sender.id, msg=u"Nadawca powinien być taki sam jak ten zdefiniowany")
-
 
     def test_emails_exceptions(self):
         topic = u"Email_testowy"
@@ -115,13 +109,11 @@ class Send_EmailTestCase(TestCase):
     """
 
     def setUp(self):
-        requestMock = RequestMock()
-        self.request = requestMock.get_request_mock()
         self.user = User.objects.create_user("Test", email="user@example.com", password="test")
 
     def testSend_at(self):
         topic = u"Email_testowy"
-        send_email(self.request, topic, template="emails/emails/base_email.html", data_email={},
+        send_email(topic, template="emails/emails/base_email.html", data_email={},
                    is_send_now=False, send_at=datetime.datetime.now() + relativedelta(seconds=2),
                    email="test@example.com")
 
@@ -134,23 +126,22 @@ class Send_EmailTestCase(TestCase):
 
     def testIs_send_now(self):
         topic = u"Email_testowy"
-        send_email(self.request, topic, template="emails/emails/base_email.html", data_email={},
+        send_email(topic, template="emails/emails/base_email.html", data_email={},
                    is_send_now=False, email="test@example.com")
         self.assertEqual(Email.objects.filter(is_send=True).count(), 0, msg=u"Nic nie powinno zostać wysłane")
         self.assertEqual(Email.objects.filter(is_send=False).count(), 1, msg=u"Musi być jeden niewysłany mail")
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", data_email={},
+        send_email(topic, template="emails/emails/base_email.html", data_email={},
                    is_send_now=True, email="test@example.com")
 
         self.assertEqual(Email.objects.filter(is_send=True).count(), 1, msg=u"Coś powinno zostać wysłane")
         self.assertEqual(Email.objects.filter(is_send=False).count(), 1, msg=u"Musi być jeden niewysłany mail")
 
-
     def testShow_by_key(self):
         topic = u"Email_testowy"
         data_email = {}
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False)
 
         email_db = Email.objects.all()[0]
@@ -162,13 +153,12 @@ class Send_EmailTestCase(TestCase):
 
     def testKey_unique(self):
         topic = u"Email_testowy"
-        data_email = {}
 
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False)
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False)
-        send_email(self.request, topic, template="emails/emails/base_email.html", user=self.user, data_email={},
+        send_email(topic, template="emails/emails/base_email.html", user=self.user, data_email={},
                    is_send_now=False)
 
         email = Email.objects.all().order_by('-id')[0]
