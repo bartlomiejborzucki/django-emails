@@ -19,10 +19,23 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+try:
+    from celery.task import task
 
-def send_email(topic, template,
+except ImportError:
+    pass
+
+
+@task
+def async_send_email(topic, template,
                email=None, data_email=None, sender=None,
                is_send_now=True, user=None, send_by_s3=False, send_at=None):
+
+    return send_email(topic, template, email, data_email, sender, is_send_now, user, send_by_s3, send_at)
+
+
+def send_email(topic, template, email=None, data_email=None, sender=None, is_send_now=True, user=None, send_by_s3=False,
+               send_at=None):
     """
     function for sending emails
     @param topic: email topic 
